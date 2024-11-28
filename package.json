@@ -1,0 +1,28 @@
+{
+  "name": "curl-wrap",
+  "version": "1.0.0",
+  "description": "Nodejs library that wraps curl command line",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hkk12369/curl-wrap.git"
+  },
+  "author": "Hitesh Khandelwal",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hkk12369/curl-wrap/issues"
+  },
+  "homepage": "https://github.com/hkk12369/curl-wrap#readme",
+  "keywords": [
+    "curl",
+    "curl-js",
+    "js-curl",
+    "node-curl",
+    "curl-impersonate",
+    "node-curl-impersonate",
+    "libcurl"
+  ],
+  "dependencies": {
+    "tough-cookie": "^5.0.0"
+  }
+}
