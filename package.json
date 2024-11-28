@@ -1,6 +1,6 @@
 {
   "name": "curl-wrap",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Nodejs library that wraps curl command line",
   "main": "index.js",
   "repository": {
