@@ -127,9 +127,6 @@ class Curl {
 			timeout: 120 * 1000,
 			// whether to verify ssl certificate
 			ignoreSSLError: true,
-			// proxy details (should be {address, port, type, auth: {username, password}})
-			// type can be http, https, socks
-			proxy: {},
 			// body of the request (valid in case of POST / PUT / PATCH / DELETE)
 			body: '',
 		};
