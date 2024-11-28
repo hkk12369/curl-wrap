@@ -18,32 +18,6 @@ console.log(response.body);
 console.log(response.statusCode);
 ```
 
-hit12369: write documentation for this library
-
-Workspace: # curl-wrap
-
-Node.js library that wraps the curl command line.
-
-## Install
-
-```sh
-npm install curl-wrap
-# OR
-yarn add curl-wrap
-```
-
-## Usage
-
-### Basic Usage
-
-```js
-const {Curl} = require('curl-wrap');
-
-const response = await Curl.get('https://www.example.com');
-console.log(response.body);
-console.log(response.statusCode);
-```
-
 ### Creating a Curl Instance
 
 ```js
