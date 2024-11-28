@@ -61,6 +61,7 @@ class CurlResponse {
 		this.ip = data.remote_ip || '';
 		this.url = data.url_effective || data.url || '';
 		this.errorMsg = data.errormsg || '';
+		this.curlTimeTaken = data.time_total || 0;
 
 		const headers = json.headers || {};
 		for (const [key, value] of Object.entries(headers)) {
@@ -895,6 +896,18 @@ class Curl {
 	}
 
 	/**
+	 * enable or disable proxy use
+	 * you need to set the proxy to use using the proxy() method
+	 * 
+	 * @package {boolean} [shouldUseProxy=true] whether to use proxy or not
+	 * @returns {Curl} self
+	 */
+	useProxy(shouldUseProxy = true) {
+		this.options.useProxy = shouldUseProxy;
+		return this;
+	}
+
+	/**
 	 * Set proxy address (or options).
 	 * Proxy type can be http, https, or socks5.
 	 *
@@ -1091,7 +1104,7 @@ class Curl {
 		if (options.compress) {
 			args.push('--compressed');
 		}
-		if (options.proxy) {
+		if (options.proxy && options.useProxy !== false) {
 			args.push('--proxy', options.proxy);
 		}
 		if (options.timeout) {
@@ -1118,7 +1131,8 @@ class Curl {
 		return args;
 	}
 
-	async getPromise() {
+	async fetch() {
+		const startTime = Date.now();
 		const cmd = this.options.cliCommand || 'curl';
 		const args = await this.getCurlArgs();
 		const curl = spawn(cmd, args);
@@ -1137,10 +1151,12 @@ class Curl {
 			});
 
 			curl.on('error', (error) => {
+				error.timeTaken = Date.now() - startTime;
 				reject(error);
 			});
 
 			curl.on('close', async (code) => {
+				response.timeTaken = Date.now() - startTime;
 				response.exitCode = code;
 				response.url = this.options.url;
 				response.body = stdout;
@@ -1185,7 +1201,7 @@ class Curl {
 	 * @return {Promise<T>} a Promise in pending state
 	 */
 	then(successCallback, errorCallback) {
-		return this.getPromise().then(successCallback, errorCallback);
+		return this.fetch().then(successCallback, errorCallback);
 	}
 
 	/**
@@ -1196,7 +1212,7 @@ class Curl {
 	 * @return {Promise<T>} a Promise in pending state
 	 */
 	catch(errorCallback) {
-		return this.getPromise().catch(errorCallback);
+		return this.fetch().catch(errorCallback);
 	}
 
 	/**
@@ -1207,7 +1223,7 @@ class Curl {
 	 * @return {Promise<T>} a Promise in pending state
 	 */
 	finally(callback) {
-		return this.getPromise().finally(callback);
+		return this.fetch().finally(callback);
 	}
 }
 
