@@ -56,12 +56,13 @@ class CurlResponse {
 
 	setCurlJson(json, options = {}) {
 		if (!json) return;
+		this.curlJson = json;
 		const data = json.json || {};
 		this.statusCode = data.response_code || 0;
 		this.ip = data.remote_ip || '';
 		this.url = data.url_effective || data.url || '';
 		this.errorMsg = data.errormsg || '';
-		this.curlTimeTaken = data.time_total || 0;
+		this.curlTimeTaken = Math.round((data.time_total || 0) * 1000);
 
 		const headers = json.headers || {};
 		for (const [key, value] of Object.entries(headers)) {
