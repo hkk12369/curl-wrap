@@ -3,6 +3,7 @@
   "version": "1.0.3",
   "description": "Nodejs library that wraps curl command line",
   "main": "index.js",
+  "types": "index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hkk12369/curl-wrap.git"
