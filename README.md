@@ -88,13 +88,15 @@ curl.apiToken('your-api-token');
 
 ### Impersonating a Browser
 
-**NOTE**: it will use `curl-impersonate-chrome` and `curl-impersonate-ff` if they are in `PATH`
+> **NOTE**: it will use `curl-impersonate` if it is in `PATH`.  
+> **See**: `https://github.com/lexiforest/curl-impersonate`
 
 ```js
 curl.impersonate('chrome');
 curl.impersonate('chromeMobile');
 curl.impersonate('firefox');
 curl.impersonate('safari');
+curl.impersonate('safariMobile');
 curl.impersonate('edge');
 ```
 

@@ -28,7 +28,8 @@ type BrowserType =
   | "edge"
   | "chromeMobile"
   | "firefox"
-  | "safari";
+  | "safari"
+  | "safariMobile";
 
 export class Curl {
   constructor();
@@ -48,8 +49,7 @@ export class Curl {
   static getNewCookieJar(...args: any[]): CookieJar;
   static getGlobalCookieJar(): CookieJar;
 
-  static hasCurlImpersonateChrome(): boolean;
-  static hasCurlImpersonateFirefox(): boolean;
+  static hasCurlImpersonate(): boolean;
 
   cliCommand(command: string): Curl;
   cliOptions(options: string | string[]): Curl;
