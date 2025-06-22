@@ -2,12 +2,6 @@ const {spawn, spawnSync} = require('child_process');
 const fs = require('fs/promises');
 const {CookieJar} = require('tough-cookie');
 
-function getDefaultProxyPort(proxyType) {
-	if (proxyType === 'http') return 80;
-	if (proxyType === 'https') return 443;
-	return 1080;
-}
-
 /**
  * Returns proxy url based on the proxy options.
  *
@@ -27,15 +21,23 @@ function makeProxyUrl(proxy, options) {
 	}
 
 	const auth = proxy.auth || options.auth || {};
-	const uri = new URL(proxy);
+	const uri = new URL(address);
 	if (!uri.port) {
-		uri.port = proxy.port || options.port || getDefaultProxyPort(uri.protocol.replace(':', ''));
+		const port = proxy.port || options.port;
+		if (port) {
+			uri.port = port;
+		}
+		else if (uri.protocol.startsWith('socks')) {
+			uri.port = '1080';
+		}
 	}
-	if (!uri.username && options.username) {
-		uri.username = proxy.username || options.username || auth.username || '';
+	if (!uri.username) {
+		const username = proxy.username || options.username || auth.username;
+		if (username) uri.username = username;
 	}
-	if (!uri.password && options.password) {
-		uri.password = proxy.password || options.password || auth.password || '';
+	if (!uri.password) {
+		const password = proxy.password || options.password || auth.password;
+		if (password) uri.password = password;
 	}
 	return uri.toString();
 }
