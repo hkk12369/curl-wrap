@@ -207,7 +207,28 @@ const curlCommand = `curl 'https://api.example.com' \
   --data-raw '{"name":"John","age":30}'`;
 
 const curl = Curl.fromCurl(curlCommand);
-const response = await curl.fetch();
+const response = await curl;
+```
+
+### Cloning Requests
+
+```js
+const baseCurl = Curl.url('https://api.example.com')
+    .header('Authorization', 'Bearer token123')
+    .header('Content-Type', 'application/json');
+
+// Clone and modify for different endpoints
+const getUserCurl = baseCurl.clone()
+    .url('https://api.example.com/user')
+    .get();
+const createUserCurl = baseCurl.clone()
+    .url('https://api.example.com/user')
+    .post()
+    .body({name: 'John'});
+
+// Both requests share the same headers but have different URLs and methods
+const userResponse = await getUserCurl;
+const createResponse = await createUserCurl;
 ```
 
 ### Method Chaining

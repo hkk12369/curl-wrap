@@ -885,8 +885,8 @@ class Curl {
 	 */
 	globalCookies(options = true) {
 		if (options === false || options === null) {
-			delete this.options.cookieJar;
-			delete this.options.readCookieJar;
+			delete this._cookieJar;
+			delete this._readCookieJar;
 			return this;
 		}
 
@@ -906,10 +906,10 @@ class Curl {
 		delete this._cookieFileFnRes;
 
 		if (options.readOnly) {
-			this.options.readCookieJar = cookieJar;
+			this._readCookieJar = cookieJar;
 		}
 		else {
-			this.options.cookieJar = cookieJar;
+			this._cookieJar = cookieJar;
 		}
 
 		return this;
@@ -924,10 +924,10 @@ class Curl {
 	cookieFile(fileName, options = {}) {
 		const setCookieJar = (cookieJar) => {
 			if (options.readOnly) {
-				this.options.readCookieJar = cookieJar;
+				this._readCookieJar = cookieJar;
 			}
 			else {
-				this.options.cookieJar = cookieJar;
+				this._cookieJar = cookieJar;
 			}
 		};
 
@@ -945,7 +945,7 @@ class Curl {
 
 		if (!options.readOnly) {
 			this._cookieFileFnRes = async () => {
-				const cookieJar = this.options.cookieJar;
+				const cookieJar = this._cookieJar;
 				if (!cookieJar) return;
 				try {
 					const contents = JSON.stringify(cookieJar.toJSON());
@@ -1202,6 +1202,34 @@ class Curl {
 	}
 
 	/**
+	 * Create a clone of this Curl instance with the same options
+	 *
+	 * @return {Curl} new Curl instance with cloned options
+	 */
+	clone() {
+		const cloned = new this.constructor();
+		
+		// Deep clone the options object (only serializable properties)
+		cloned.options = JSON.parse(JSON.stringify(this.options));
+		
+		// Copy non-serializable properties
+		if (this._cookieJar) {
+			cloned._cookieJar = this._cookieJar;
+		}
+		if (this._readCookieJar) {
+			cloned._readCookieJar = this._readCookieJar;
+		}
+		if (this._cookieFileFn) {
+			cloned._cookieFileFn = this._cookieFileFn;
+		}
+		if (this._cookieFileFnRes) {
+			cloned._cookieFileFnRes = this._cookieFileFnRes;
+		}
+		
+		return cloned;
+	}
+
+	/**
 	 * Export the current request as a curl command string
 	 *
 	 * @return {Promise<string>} curl command as a string
@@ -1440,7 +1468,7 @@ class Curl {
 			await this._cookieFileFn();
 		}
 
-		const cookieJar = options.readCookieJar || options.cookieJar;
+		const cookieJar = this._readCookieJar || this._cookieJar;
 		if (cookieJar) {
 			const jarCookies = await cookieJar.getCookies(options.url);
 			if (jarCookies) {
@@ -1525,7 +1553,7 @@ class Curl {
 		const cmd = options.cliCommand || 'curl';
 		const args = await this.getCurlArgs();
 		const curl = spawn(cmd, args);
-		const cookieJar = options.cookieJar;
+		const cookieJar = this._cookieJar;
 
 		let stdout = options.asBuffer ? Buffer.from([]) : '';
 		let stderr = '';

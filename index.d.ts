@@ -3,6 +3,7 @@ import { CookieJar } from "tough-cookie";
 interface CurlOptions {
   method?: string; // HTTP method (e.g., GET, POST)
   headers?: Record<string, string>; // Request headers
+  cookies?: Record<string, string>; // Request cookies
   body?: string | object | null; // Request body
   timeout?: number; // Timeout in milliseconds
   [key: string]: any; // Allow additional options
@@ -118,6 +119,8 @@ export class Curl {
 
   asBuffer(returnAsBuffer?: boolean): Curl;
 
+  clone(): Curl;
+
   exportAsCurl(): Promise<string>;
 
   fetch(): Promise<CurlResponse>;
@@ -137,4 +140,9 @@ export class Curl {
   private options: any;
   private _fields: Record<string, any>;
   private _query: Record<string, any>;
+  private _cookies: Record<string, any>;
+  private _cookieJar?: CookieJar;
+  private _readCookieJar?: CookieJar;
+  private _cookieFileFn?: () => Promise<void>;
+  private _cookieFileFnRes?: () => Promise<void>;
 }
