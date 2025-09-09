@@ -117,6 +117,8 @@ export class Curl {
 
   asBuffer(returnAsBuffer?: boolean): Curl;
 
+  exportAsCurl(): Promise<string>;
+
   fetch(): Promise<CurlResponse>;
 
   then(

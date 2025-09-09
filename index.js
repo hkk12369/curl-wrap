@@ -1127,6 +1127,41 @@ class Curl {
 	}
 
 	/**
+	 * Export the current request as a curl command string
+	 *
+	 * @return {Promise<string>} curl command as a string
+	 */
+	async exportAsCurl() {
+		const cmd = this.options.cliCommand || 'curl';
+		const args = await this.getCurlArgs();
+		// Filter out internal options that shouldn't appear in exported commands
+		const skipOptions = ['--silent', '--no-keepalive', '--keepalive', '--write-out', '--insecure', '--location'];
+		const escape = arg => `'${arg.replace(/'/g, "'\"'\"'")}'`;
+		
+		const url = args[0];
+		const lines = [`${cmd} ${escape(url)}`];
+		for (let i = 1; i < args.length; i++) {
+			const arg = String(args[i]);
+			const nextArg = String(args[i + 1] ?? '');
+			const isNextArgValue = !nextArg.startsWith('--');
+			if (isNextArgValue) {
+				i++;
+			}
+			// Skip internal options and their values
+			if (skipOptions.includes(arg)) continue;
+			if (isNextArgValue) {
+				const escapedNextArg = /[\s"'`&:;,><|(){}~^%#@!/=+\$\?\*\[\]]/.test(nextArg) ? escape(nextArg) : nextArg;
+				lines.push(`${arg} ${escapedNextArg}`);
+			}
+			else {
+				lines.push(arg);
+			}
+		}
+		
+		return lines.join(' \\\n  ');
+	}
+
+	/**
 	 * Add the options 'fields' to the options body, form or qs
 	 * on the basis of the request method.
 	 *
@@ -1241,19 +1276,12 @@ class Curl {
 			'%{stderr}===<json>==={"json":%{json},"headers":%{header_json}}===</json>===',
 		];
 
-		if (body) {
-			args.push('--data-raw', body);
+		const cliOptions = options.cliOptions;
+		if (cliOptions) {
+			args.push(...cliOptions);
 		}
 
-		const cookieHeader = await this.getCookieHeader();
-		if (cookieHeader) {
-			this.header('cookie', cookieHeader);
-		}
-
-		for (const [key, value] of Object.entries(options.headers)) {
-			args.push('--header', `${key}: ${value}`);
-		}
-		if (options.compress) {
+		if (options.compress && !cliOptions?.includes('--compressed')) {
 			args.push('--compressed');
 		}
 		if (options.proxy && options.useProxy !== false) {
@@ -1275,9 +1303,17 @@ class Curl {
 			args.push('--verbose');
 		}
 
-		const cliOptions = options.cliOptions;
-		if (cliOptions) {
-			args.push(...cliOptions);
+		const cookieHeader = await this.getCookieHeader();
+		if (cookieHeader) {
+			this.header('cookie', cookieHeader);
+		}
+
+		for (const [key, value] of Object.entries(options.headers)) {
+			args.push('--header', `${key}: ${value}`);
+		}
+
+		if (body) {
+			args.push('--data-raw', body);
 		}
 
 		return args;

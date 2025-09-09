@@ -179,6 +179,23 @@ const response = await curl;
 console.log(response.body); // Buffer object instead of string
 ```
 
+### Export as Curl Command
+
+```js
+const curl = Curl.url('https://api.example.com')
+    .post()
+    .header('Content-Type', 'application/json')
+    .body({key: 'value'});
+
+const curlCommand = await curl.exportAsCurl();
+console.log(curlCommand);
+// Output:
+// curl 'https://api.example.com' \
+//   --request POST \
+//   --header 'content-type: application/json' \
+//   --data-raw '{"key":"value"}'
+```
+
 ### Method Chaining
 
 ```js
