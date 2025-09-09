@@ -1089,6 +1089,20 @@ class Curl {
 	}
 
 	/**
+	 * Set if the body is to be returned as a buffer
+	 *
+	 * @param {boolean} [returnAsBuffer=true]
+	 * @return {Connect} self
+	 */
+	asBuffer(returnAsBuffer = true) {
+		this.options.asBuffer = returnAsBuffer;
+		if (returnAsBuffer) {
+			this.body = Buffer.from([]);
+		}
+		return this;
+	}
+
+	/**
 	 * Add the options 'fields' to the options body, form or qs
 	 * on the basis of the request method.
 	 *
@@ -1247,18 +1261,26 @@ class Curl {
 
 	async fetch() {
 		const startTime = Date.now();
-		const cmd = this.options.cliCommand || 'curl';
+		const options = this.options;
+		const cmd = options.cliCommand || 'curl';
 		const args = await this.getCurlArgs();
 		const curl = spawn(cmd, args);
-		const cookieJar = this.options.cookieJar;
+		const cookieJar = options.cookieJar;
 
-		let stdout = '';
+		let stdout = options.asBuffer ? Buffer.from([]) : '';
 		let stderr = '';
 		const response = new CurlResponse();
 		return new Promise((resolve, reject) => {
-			curl.stdout.on('data', (data) => {
-				stdout += data;
-			});
+			if (options.asBuffer) {
+				curl.stdout.on('data', (data) => {
+					stdout = Buffer.concat([stdout, data]);
+				});
+			}
+			else {
+				curl.stdout.on('data', (data) => {
+					stdout += data;
+				});
+			}
 
 			curl.stderr.on('data', (data) => {
 				stderr += data;
@@ -1272,7 +1294,7 @@ class Curl {
 			curl.on('close', async (code) => {
 				response.timeTaken = Date.now() - startTime;
 				response.exitCode = code;
-				response.url = this.options.url;
+				response.url = options.url;
 				response.body = stdout;
 				stderr = stderr.replace(/===<json>===(.*)===<\/json>===/s, (match, p1) => {
 					try {

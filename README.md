@@ -165,6 +165,14 @@ const response = await curl;
 console.log(response.stderr);
 ```
 
+### Buffer Response
+
+```js
+curl.asBuffer();
+const response = await curl;
+console.log(response.body); // Buffer object instead of string
+```
+
 ### Method Chaining
 
 ```js

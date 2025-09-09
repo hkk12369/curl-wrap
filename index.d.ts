@@ -10,7 +10,7 @@ interface CurlOptions {
 
 interface CurlResponse {
   url: string;
-  body: string; // Response body as a string
+  body: string | Buffer; // Response body as a string or Buffer
   headers: Record<string, string>; // Response headers
   statusCode: number; // HTTP status code
   status: number; // alias for .statusCode
@@ -112,6 +112,8 @@ export class Curl {
   put(): Curl;
 
   verbose(isVerbose?: boolean): Curl;
+
+  asBuffer(returnAsBuffer?: boolean): Curl;
 
   fetch(): Promise<CurlResponse>;
 
