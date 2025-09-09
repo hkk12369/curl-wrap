@@ -43,9 +43,9 @@ function makeProxyUrl(proxy, options) {
 }
 
 class CurlResponse {
-	constructor() {
+	constructor({body = ''} = {}) {
 		this.url = '';
-		this.body = '';
+		this.body = body;
 		this.headers = {};
 		this.statusCode = 0;
 		this.ip = '';
@@ -1096,9 +1096,6 @@ class Curl {
 	 */
 	asBuffer(returnAsBuffer = true) {
 		this.options.asBuffer = returnAsBuffer;
-		if (returnAsBuffer) {
-			this.body = Buffer.from([]);
-		}
 		return this;
 	}
 
@@ -1269,7 +1266,9 @@ class Curl {
 
 		let stdout = options.asBuffer ? Buffer.from([]) : '';
 		let stderr = '';
-		const response = new CurlResponse();
+		const response = new CurlResponse({
+			body: options.asBuffer ? Buffer.from([]) : '',
+		});
 		return new Promise((resolve, reject) => {
 			if (options.asBuffer) {
 				curl.stdout.on('data', (data) => {
