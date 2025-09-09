@@ -130,6 +130,31 @@ class CurlResponse {
 	}
 }
 
+/**
+ * Parse cookies string into object
+ * 
+ * @param {string} cookieStr
+ * @return {object}
+ */
+function parseCookies(cookieStr) {
+	const cookies = {};
+	if (!cookieStr) return cookies;
+	const parts = cookieStr.split(';');
+	
+	for (const part of parts) {
+		const equalIndex = part.indexOf('=');
+		if (equalIndex !== -1) {
+			const key = part.slice(0, equalIndex).trim();
+			const value = part.slice(equalIndex + 1).trim();
+			if (key && value) {
+				cookies[key] = value;
+			}
+		}
+	}
+	
+	return cookies;
+}
+
 class Curl {
 	/**
 	 * Creates a new Curl object.
@@ -815,18 +840,15 @@ class Curl {
 	 */
 	cookie(cookieName, cookieValue) {
 		if (cookieValue === undefined) {
-			this.globalCookies(cookieName);
+			this.cookies(cookieName);
 		}
 		else if (typeof cookieName === 'string') {
-			if (cookieValue === null || cookieValue === false) {
-				delete this._cookies[cookieName];
-			}
-			else {
+			if (typeof cookieValue === 'string') {
 				this._cookies[cookieName] = cookieValue;
 			}
-		}
-		else if (cookieName && typeof cookieName === 'object') {
-			Object.assign(this._cookies, cookieName);
+			else if (cookieValue === null || cookieValue === false) {
+				delete this._cookies[cookieName];
+			}
 		}
 
 		return this;
@@ -836,7 +858,7 @@ class Curl {
 	 * Sets multiple cookies.
 	 * Can be used to enable global cookies, if cookies is set to true.
 	 *
-	 * @param {object|boolean} cookies object representing the cookies
+	 * @param {object|boolean|string} cookies object representing the cookies
 	 * and their values as key:value pairs.
 	 * @return {Curl} self
 	 */
@@ -845,6 +867,10 @@ class Curl {
 			this.globalCookies(cookies);
 		}
 		else if (cookies && typeof cookies === 'object') {
+			Object.assign(this._cookies, cookies);
+		}
+		else if (typeof cookies === 'string') {
+			const cookies = parseCookies(cookieName);
 			Object.assign(this._cookies, cookies);
 		}
 

@@ -81,7 +81,7 @@ export class Curl {
     cookieName: string | boolean | object,
     cookieValue?: string
   ): Curl;
-  cookies(cookies: object | boolean): Curl;
+  cookies(cookies: object | boolean | string): Curl;
 
   globalCookies(options?: boolean | object): Curl;
   cookieJar(cookieJar: CookieJar, options?: { readOnly?: boolean }): Curl;
