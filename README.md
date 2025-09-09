@@ -45,6 +45,9 @@ curl.headers({
     'User-Agent': 'curl-wrap/1.0',
     'Accept': 'application/json'
 });
+
+// clear all headers
+curl.clearHeaders();
 ```
 
 ### Setting Cookies
@@ -98,6 +101,9 @@ curl.impersonate('firefox');
 curl.impersonate('safari');
 curl.impersonate('safariMobile');
 curl.impersonate('edge');
+
+// Or create a new instance with impersonation
+const chromeCurl = Curl.impersonate('chrome');
 ```
 
 ### Setting Request Method

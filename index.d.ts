@@ -50,6 +50,7 @@ export class Curl {
   static getGlobalCookieJar(): CookieJar;
 
   static hasCurlImpersonate(): boolean;
+  static impersonate(browser?: BrowserType): Curl;
 
   cliCommand(command: string): Curl;
   cliOptions(options: string | string[]): Curl;
@@ -61,6 +62,7 @@ export class Curl {
 
   header(headerName: string | object, headerValue?: string): Curl;
   headers(headers: object): Curl;
+  clearHeaders(): Curl;
 
   json(body?: object): Curl;
   body(body: any, contentType?: string): Curl;

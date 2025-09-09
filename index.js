@@ -292,9 +292,13 @@ class Curl {
 	}
 
 	/**
+	 * @typedef {"chrome"|"chromeMobile"|"edge"|"safari"|"safariMobile"|"firefox"} BrowserType
+	 */
+
+	/**
 	 * impersonate a browser
 	 *
-	 * @param {string} browser browser to impersonate (chrome / chromeMobile / edge / safari / safariMobile / firefox)
+	 * @param {BrowserType} browser browser to impersonate
 	 * @return {Curl} self
 	 */
 	impersonate(browser = 'chrome') {
@@ -567,6 +571,19 @@ class Curl {
 	}
 
 	/**
+	 * @static
+	 * impersonate a browser
+	 *
+	 * @param {BrowserType} browser browser to impersonate
+	 * @return {Curl} self
+	 */
+	static impersonate(browser = 'chrome') {
+		const curl = new this();
+		curl.impersonate(browser);
+		return curl;
+	}
+
+	/**
 	 * Set or unset the followRedirect option for the connection.
 	 *
 	 * @param {boolean} shouldFollowRedirect boolean representing whether to follow redirect or not
@@ -617,6 +634,16 @@ class Curl {
 	 */
 	headers(headers) {
 		this.header(headers);
+		return this;
+	}
+
+	/**
+	 * Clear all headers
+	 * 
+	 * @return {Curl} self
+	 */
+	clearHeaders() {
+		this.options.headers = {};
 		return this;
 	}
 
@@ -1092,7 +1119,7 @@ class Curl {
 	 * Set if the body is to be returned as a buffer
 	 *
 	 * @param {boolean} [returnAsBuffer=true]
-	 * @return {Connect} self
+	 * @return {Curl} self
 	 */
 	asBuffer(returnAsBuffer = true) {
 		this.options.asBuffer = returnAsBuffer;
