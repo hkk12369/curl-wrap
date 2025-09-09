@@ -66,3 +66,6 @@ typings/
 # Lock files
 package-lock.json
 yarn.lock
+
+# Local test files
+test.js

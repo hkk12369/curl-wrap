@@ -42,6 +42,55 @@ function makeProxyUrl(proxy, options) {
 	return uri.toString();
 }
 
+/**
+ * Parse curl command string into arguments array
+ * 
+ * @param {string} command
+ * @return {string[]}
+ */
+function parseCommand(command) {
+	// Clean up the command - remove line breaks and extra spaces
+	command = command.replace(/\\\s*\n/g, ' ').replace(/\s+/g, ' ').trim();
+
+	const args = [];
+	let current = '';
+	let inQuotes = false;
+	let quoteChar = '';
+	
+	for (let i = 0; i < command.length; i++) {
+		const char = command[i];
+		const nextChar = command[i + 1];
+		
+		if ((char === '"' || char === "'") && !inQuotes) {
+			inQuotes = true;
+			quoteChar = char;
+		}
+		else if (char === quoteChar && inQuotes) {
+			inQuotes = false;
+			quoteChar = '';
+		}
+		else if (char === ' ' && !inQuotes) {
+			if (current.trim()) {
+				args.push(current.trim());
+				current = '';
+			}
+		}
+		else if (char === '\\' && nextChar === quoteChar && inQuotes) {
+			current += nextChar;
+			i++; // Skip next character
+		}
+		else {
+			current += char;
+		}
+	}
+	
+	if (current.trim()) {
+		args.push(current.trim());
+	}
+	
+	return args;
+}
+
 class CurlResponse {
 	constructor({body = ''} = {}) {
 		this.url = '';
@@ -1159,6 +1208,131 @@ class Curl {
 		}
 		
 		return lines.join(' \\\n  ');
+	}
+
+	/**
+	 * @static
+	 * Create a new Curl instance from a curl command string
+	 *
+	 * @param {string} curlCommand curl command string to parse
+	 * @return {Curl} new Curl instance
+	 */
+	static fromCurl(curlCommand) {
+		const curl = new this();
+		curl.options.headers = {};
+		
+		// Parse the command into arguments
+		const args = parseCommand(curlCommand);
+		
+		let method;
+		let body;
+		
+		// Process arguments
+		for (let i = 0; i < args.length; i++) {
+			const arg = args[i];
+			const nextArg = args[i + 1];
+			const isNextArgValue = nextArg && !nextArg.startsWith('-');
+			
+			if (i === 0 && !arg.startsWith('curl')) {
+				// First argument should be the URL if no 'curl' command prefix
+				curl.url(arg);
+			}
+			else if (i === 1 && args[0].startsWith('curl')) {
+				// Second argument is URL when first is 'curl'
+				curl.url(arg);
+			}
+			else if (arg === '--request' || arg === '-X') {
+				if (!isNextArgValue) continue;
+				method = nextArg;
+				i++;
+			}
+			else if (arg === '--header' || arg === '-H') {
+				if (!isNextArgValue) continue;
+				const colonIndex = nextArg.indexOf(':');
+				if (colonIndex !== -1) {
+					const headerName = nextArg.slice(0, colonIndex).trim();
+					const headerValue = nextArg.slice(colonIndex + 1).trim();
+					curl.header(headerName, headerValue);
+				}
+				i++;
+			}
+			else if (arg === '--data' || arg === '--data-raw' || arg === '-d') {
+				if (!isNextArgValue) continue;
+				body = nextArg;
+				i++;
+			}
+			else if (arg === '--cookie' || arg === '-b') {
+				if (!isNextArgValue) continue;
+				curl.header('cookie', nextArg);
+				i++;
+			}
+			else if (arg === '--user-agent' || arg === '-A') {
+				if (!isNextArgValue) continue;
+				curl.userAgent(nextArg);
+				i++;
+			}
+			else if (arg === '--referer' || arg === '-e') {
+				if (!isNextArgValue) continue;
+				curl.referer(nextArg);
+				i++;
+			}
+			else if (arg === '--max-time' || arg === '-m') {
+				if (!isNextArgValue) continue;
+				const timeout = Number(nextArg);
+				if (timeout > 0) curl.timeout(timeout);
+				i++;
+			}
+			else if (arg === '--proxy' || arg === '-x') {
+				if (!isNextArgValue) continue;
+				curl.proxy(nextArg);
+				i++;
+			}
+			else if (arg === '--compressed') {
+				curl.compress(true);
+			}
+			else if (arg === '--location' || arg === '-L') {
+				curl.followRedirect(true);
+			}
+			else if (arg === '--max-redirs') {
+				if (!isNextArgValue) continue;
+				const maxRedir = Math.floor(Number(nextArg));
+				if (maxRedir > 0) curl.maxRedirects(maxRedir);
+				i++;
+			}
+			else if (arg === '--verbose' || arg === '-v') {
+				curl.verbose(true);
+			}
+			else if (arg.startsWith('--') || arg.startsWith('-')) {
+				// Ignore internal options that shouldn't be imported
+				const ignoreOptions = ['--silent', '--no-keepalive', '--keepalive', '--write-out', '--insecure'];
+				if (ignoreOptions.includes(arg)) {
+					// If the ignored option has a value, ignore it too
+					if (isNextArgValue) {
+						i++;
+					}
+				}
+				else {
+					// Handle unknown curl options by adding them as cliOptions
+					if (isNextArgValue) {
+						curl.cliOptions([arg, nextArg]);
+						i++; // Skip next argument
+					}
+					else {
+						curl.cliOptions(arg);
+					}
+				}
+			}
+		}
+
+		if (body) {
+			curl.body(body);
+			method = method || 'POST';
+		}
+		if (method) {
+			curl.method(method);
+		}
+		
+		return curl;
 	}
 
 	/**

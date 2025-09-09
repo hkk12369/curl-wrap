@@ -51,6 +51,7 @@ export class Curl {
 
   static hasCurlImpersonate(): boolean;
   static impersonate(browser?: BrowserType): Curl;
+  static fromCurl(curlCommand: string): Curl;
 
   cliCommand(command: string): Curl;
   cliOptions(options: string | string[]): Curl;

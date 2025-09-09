@@ -196,6 +196,20 @@ console.log(curlCommand);
 //   --data-raw '{"key":"value"}'
 ```
 
+### Import from Curl Command
+
+```js
+const curlCommand = `curl 'https://api.example.com' \
+  --request POST \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer token123' \
+  --cookie 'session=abc123; user=john' \
+  --data-raw '{"name":"John","age":30}'`;
+
+const curl = Curl.fromCurl(curlCommand);
+const response = await curl.fetch();
+```
+
 ### Method Chaining
 
 ```js
