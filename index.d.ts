@@ -86,6 +86,7 @@ export class Curl {
 
   globalCookies(options?: boolean | object): Curl;
   cookieJar(cookieJar: CookieJar, options?: { readOnly?: boolean }): Curl;
+  getCookieJar(): CookieJar | undefined;
   cookieFile(fileName: string, options?: object): Curl;
 
   timeout(timeout: number): Curl;

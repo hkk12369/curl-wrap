@@ -916,6 +916,15 @@ class Curl {
 	}
 
 	/**
+	 * Get the current cookie jar
+	 *
+	 * @return {CookieJar|undefined} the current cookie jar
+	 */
+	getCookieJar() {
+		return this._cookieJar || this._readCookieJar;
+	}
+
+	/**
 	 * Set the value of cookie jar based on a file (cookie store).
 	 *
 	 * @param {string} fileName name of (or path to) the file
